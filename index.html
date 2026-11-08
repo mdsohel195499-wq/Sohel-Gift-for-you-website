@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Device Access</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background: linear-gradient(135deg,#eee8ff,#dcecff);
+  padding: 20px;
+}
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 18px;
+  max-width: 450px;
+  margin: auto;
+  box-shadow: 0 5px 20px #0002;
+}
+button {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  margin: 10px 0;
+  border: 0;
+  border-radius: 10px;
+  background: #6336c9;
+  color: white;
+  font-size: 16px;
+}
+video {
+  width: 100%;
+  background: #222;
+  border-radius: 12px;
+  margin-top: 15px;
+}
+#status { color: #333; }
+.corner-button {
+  position: fixed;
+  bottom: 8px;
+  right: 8px;
+  width: auto;
+  padding: 4px 7px;
+  margin: 0;
+  font-size: 9px;
+  opacity: 0.35;
+  background: #555;
+  border-radius: 6px;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+<h2>My Device Access 📱</h2>
+<p>নিজের ডিভাইসে অনুমতি দিয়ে পরীক্ষা করো</p>
+
+<button onclick="startCamera()">📷 Camera Access</button>
+<button onclick="startMic()">🎙️ Microphone Access</button>
+<button onclick="startScreen()">📱 Screen Sharing</button>
+
+<video id="preview" autoplay playsinline muted></video>
+<p id="status">কোনো Access চালু নেই</p>
+</div>
+
+<button class="corner-button" onclick="stopAll()">
+সব Access চালু করুন
+</button>
+
+<script>
+let streams = [];
+
+async function startCamera() {
+  try {
+    const s = await navigator.mediaDevices.getUserMedia({video:true});
+    streams.push(s);
+    showStream(s);
+    statusText("Camera চালু হয়েছে");
+  } catch(e) {
+    statusText("Camera চালু হয়নি: " + e.message);
+  }
+}
+
+async function startMic() {
+  try {
+    const s = await navigator.mediaDevices.getUserMedia({audio:true});
+    streams.push(s);
+    statusText("Microphone চালু হয়েছে");
+  } catch(e) {
+    statusText("Microphone চালু হয়নি: " + e.message);
+  }
+}
+
+async function startScreen() {
+  try {
+    const s = await navigator.mediaDevices.getDisplayMedia({video:true});
+    streams.push(s);
+    showStream(s);
+    statusText("Screen sharing চালু হয়েছে");
+    s.getVideoTracks()[0].addEventListener("ended", () => {
+      statusText("Screen sharing বন্ধ হয়েছে");
+    });
+  } catch(e) {
+    statusText("Screen sharing শুরু হয়নি: " + e.message);
+  }
+}
+
+function showStream(s) {
+  document.getElementById("preview").srcObject = s;
+}
+
+function statusText(t) {
+  document.getElementById("status").textContent = t;
+}
+
+function stopAll() {
+  streams.forEach(s => s.getTracks().forEach(t => t.stop()));
+  streams = [];
+  document.getElementById("preview").srcObject = null;
+  statusText("সব Access বন্ধ হয়েছে");
+}
+</script>
+
+</body>
+</html>
